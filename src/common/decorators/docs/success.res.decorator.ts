@@ -14,6 +14,7 @@ export const ApiSuccessResponse = <ResultDto extends Type<unknown>>(
   applyDecorators(
     ApiExtraModels(SuccessResDto, resultDto),
     ApiOkResponse({
+      description: '성공 응답',
       schema: {
         allOf: [
           { $ref: getSchemaPath(SuccessResDto) },

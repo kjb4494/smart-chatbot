@@ -12,7 +12,7 @@ export const ApiSuccessSimpleRes = (
 ) =>
   applyDecorators(
     ApiOkResponse({
-      description: 'Successful response',
+      description: '성공 응답',
       schema: {
         type: 'object',
         properties: {
