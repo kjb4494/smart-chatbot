@@ -11,7 +11,7 @@ export class ErrorResDto {
     example: '지정되지 않은 에러 메세지입니다.',
     description: '에러 결과 상세',
   })
-  detail: any;
+  result: any;
 
   @ApiProperty({ example: new Date().toISOString(), description: '응답 시간' })
   timestamp: string;
@@ -19,7 +19,7 @@ export class ErrorResDto {
   constructor(partial: Partial<ErrorResDto>) {
     this.code = partial.code ?? 500;
     this.message = partial.message ?? '실패';
-    this.detail = partial.detail ?? '지정되지 않은 에러 메세지입니다.';
+    this.result = partial.result ?? null;
     this.timestamp = new Date().toISOString();
   }
 }

@@ -6,17 +6,17 @@ export interface RestExceptionResType {
   status: number;
   code: number;
   message: string;
-  detail?: any;
+  result?: any;
 }
 
 export class RestException extends HttpException {
-  constructor(errorKey: ErrorCodeKey, detail?: any) {
+  constructor(errorKey: ErrorCodeKey, result?: any) {
     const { status, code, message } = ErrorCode[errorKey];
     const response: RestExceptionResType = {
       status,
       code,
       message,
-      detail,
+      result: result,
     };
     super(response, status);
   }

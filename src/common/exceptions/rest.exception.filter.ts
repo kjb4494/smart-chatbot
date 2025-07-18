@@ -32,7 +32,7 @@ export class RestExceptionFilter implements ExceptionFilter {
       const payload = new ErrorResDto({
         code: exceptionResponse.code,
         message: exceptionResponse.message,
-        detail: exceptionResponse.detail,
+        result: exceptionResponse.result,
       });
       this.logger.debug(
         `[RestException] [${request.method}] ${request.originalUrl} (${exception.getStatus()})`,
@@ -54,7 +54,7 @@ export class RestExceptionFilter implements ExceptionFilter {
       const payload = new ErrorResDto({
         code: exception.getStatus(),
         message,
-        detail: result,
+        result: result,
       });
       this.logger.debug(
         `[UnauthorizedException] [${request.method}] ${request.originalUrl} (${exception.getStatus()})`,
@@ -69,14 +69,14 @@ export class RestExceptionFilter implements ExceptionFilter {
       const exceptionResponse = exception.getResponse();
       const payload = new ErrorResDto({
         code: 4009999,
-        detail: {},
+        result: {},
         message: 'Bad Reqeust',
       });
       // 실서버가 아니면 payload에도 상세 정보를 담아줌
       if (process.env.NODE_ENV !== 'prod') {
         switch (typeof exceptionResponse) {
           case 'object': {
-            payload.detail = exceptionResponse;
+            payload.result = exceptionResponse;
             break;
           }
           case 'string': {
@@ -113,7 +113,7 @@ export class RestExceptionFilter implements ExceptionFilter {
       const payload = new ErrorResDto({
         code: exception.getStatus(),
         message: 'API Not Found.',
-        detail: {},
+        result: {},
       });
       response.status(exception.getStatus()).json(payload);
       return;
@@ -135,7 +135,7 @@ export class RestExceptionFilter implements ExceptionFilter {
       const payload = new ErrorResDto({
         code: 5009999,
         message: 'Internal Server Error.',
-        detail: {},
+        result: {},
       });
       this.logger.error(
         `[Internal Server Error] [${request.method}] ${request.originalUrl} (${status})`,
@@ -158,7 +158,7 @@ export class RestExceptionFilter implements ExceptionFilter {
 
     const payload = new ErrorResDto({
       code: 4009998,
-      detail: {},
+      result: {},
       message: 'Unknown Error.',
     });
     this.logger.error(
