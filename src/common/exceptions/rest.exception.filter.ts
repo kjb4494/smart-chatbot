@@ -14,6 +14,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ErrorResDto } from '../dto/error.res.dto';
 import { RestException, RestExceptionResType } from './rest.exception';
+import { RestServerException } from './rest.server.exception';
 
 @Catch()
 export class RestExceptionFilter implements ExceptionFilter {
@@ -36,6 +37,22 @@ export class RestExceptionFilter implements ExceptionFilter {
       });
       this.logger.debug(
         `[RestException] [${request.method}] ${request.originalUrl} (${exception.getStatus()})`,
+        payload,
+      );
+      response.status(exception.getStatus()).json(payload);
+      return;
+    }
+
+    // 서버 예외 처리
+    if (exception instanceof RestServerException) {
+      const message = exception.getResponse() as string;
+      const payload = new ErrorResDto({
+        code: 5009999,
+        message: message,
+        result: null,
+      });
+      this.logger.error(
+        `[RestServerException] [${request.method}] ${request.originalUrl} (${exception.getStatus()})`,
         payload,
       );
       response.status(exception.getStatus()).json(payload);

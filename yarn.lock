@@ -1133,6 +1133,11 @@
   dependencies:
     "@noble/hashes" "^1.1.5"
 
+"@pinecone-database/pinecone@^6.1.1":
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/@pinecone-database/pinecone/-/pinecone-6.1.1.tgz#4b79b7128ab14231d60f5b684618a6871ca46cb1"
+  integrity sha512-wstOV6gVdShi1PMrrmmgj2md5NwoVL3SS4brOiuxlGv2m0kiYBSxkvi6cx8S4dWkA/mfi1fzwmZ2YX64K+yaMA==
+
 "@pkgr/core@^0.2.4":
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.2.7.tgz#eb5014dfd0b03e7f3ba2eeeff506eed89b028058"
@@ -4664,6 +4669,11 @@ onetime@^6.0.0:
   integrity sha512-1FlR+gjXK7X+AsAHso35MnyN5KqGwJRi/31ft6x0M194ht7S+rWAvd7PHss9xSKMzE0asv1pyIHaJYq+BbacAQ==
   dependencies:
     mimic-fn "^4.0.0"
+
+openai@^5.10.1:
+  version "5.10.1"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-5.10.1.tgz#4535a9603f4d03b2392bb2ca41a618a80fdcfacd"
+  integrity sha512-fq6xVfv1/gpLbsj8fArEt3b6B9jBxdhAK+VJ+bDvbUvNd+KTLlA3bnDeYZaBsGH9LUhJ1M1yXfp9sEyBLMx6eA==
 
 optionator@^0.9.3:
   version "0.9.4"

@@ -25,6 +25,40 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Environment Variables
+
+이 프로젝트를 실행하기 위해 다음 환경변수들을 설정해야 합니다:
+
+### 필수 환경변수
+
+1. **PINECONE_KEY**: Pinecone API 키
+   - [Pinecone Console](https://app.pinecone.io/)에서 생성
+   - 무료 계정으로도 사용 가능
+
+2. **OPENAI_API_KEY**: OpenAI API 키
+   - [OpenAI Platform](https://platform.openai.com/api-keys)에서 생성
+   - text-embedding-3-small 모델 사용
+
+### 선택적 환경변수
+
+3. **PINECONE_INDEX_NAME**: Pinecone 인덱스 이름 (기본값: smart-chatbot)
+
+### 환경변수 설정 방법
+
+1. **프로젝트 루트에 `.env` 파일 생성**:
+
+   ```env
+   PINECONE_KEY=your_actual_pinecone_api_key
+   OPENAI_API_KEY=your_actual_openai_api_key
+   PINECONE_INDEX_NAME=smart-chatbot
+   ```
+
+2. **또는 `src/config/.env.local` 파일 생성** (현재 코드에서 이 파일을 찾고 있음)
+
+3. **또는 시스템 환경변수로 설정**:
+   - Windows: `set PINECONE_KEY=your_actual_pinecone_api_key`
+   - Linux/Mac: `export PINECONE_KEY=your_actual_pinecone_api_key`
+
 ## Project setup
 
 ```bash
@@ -43,6 +77,35 @@ $ yarn run start:dev
 # production mode
 $ yarn run start:prod
 ```
+
+## API Endpoints
+
+### Pinecone API
+
+- `POST /pinecone/upsert` - 텍스트를 Pinecone에 저장
+- `GET /pinecone/search` - 유사한 텍스트 검색
+- `DELETE /pinecone/:id` - 저장된 텍스트 삭제
+
+### 사용 예시
+
+1. **텍스트 저장**:
+
+   ```bash
+   curl -X POST http://localhost:3000/pinecone/upsert \
+     -H "Content-Type: application/json" \
+     -d '{
+       "text": "인공지능과 머신러닝에 대한 상세한 설명...",
+       "metadata": {
+         "title": "AI/ML 가이드",
+         "category": "기술문서"
+       }
+     }'
+   ```
+
+2. **텍스트 검색**:
+   ```bash
+   curl "http://localhost:3000/pinecone/search?query=인공지능&topK=5"
+   ```
 
 ## Run tests
 

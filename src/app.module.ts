@@ -4,7 +4,9 @@ import { utilities, WinstonModule } from 'nest-winston';
 import * as path from 'path';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
-import { ServerController } from './modules/server/server.controller';
+import { LegalModule } from './modules/legal/legal.module';
+import { PineconeModule } from './modules/pinecone/pinecone.module';
+import { ServerModule } from './modules/server/server.module';
 
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
@@ -38,8 +40,9 @@ const logFormat = winston.format.combine(
         }),
       ],
     }),
+    PineconeModule,
+    LegalModule,
+    ServerModule,
   ],
-  controllers: [ServerController],
-  providers: [],
 })
 export class AppModule {}
