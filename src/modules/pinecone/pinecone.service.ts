@@ -11,18 +11,18 @@ export class PineconeService {
   private defaultIndexName: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly configService: ConfigService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {
     this.init();
   }
 
   private init() {
-    const apiKey = this.configService.get<string>('PINECONE_KEY');
-    this.logger.debug(`PINECONE_KEY: ${apiKey}`);
+    const apiKey = this.configService.get<string>('PINECONE_API_KEY');
+    this.logger.debug(`PINECONE_API_KEY: ${apiKey}`);
     if (!apiKey) {
       this.logger.warn(
-        'PINECONE_KEY environment variable is not set. Pinecone features will not work.',
+        'PINECONE_API_KEY environment variable is not set. Pinecone features will not work.',
       );
       return;
     }
@@ -32,7 +32,7 @@ export class PineconeService {
     });
 
     this.defaultIndexName = this.configService.get<string>(
-      'PINECONE_INDEX_NAME',
+      'PINECONE_DEFAULT_INDEX_NAME',
       'smart-chatbot',
     );
 
@@ -42,8 +42,6 @@ export class PineconeService {
   }
 
   public getPinecone() {
-    const apiKey = this.configService.get<string>('PINECONE_KEY');
-    this.logger.debug(`PINECONE_KEY: ${apiKey}`);
     if (!this.pinecone) {
       throw new RestServerException('Pinecone is not initialized');
     }

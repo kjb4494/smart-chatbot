@@ -15,9 +15,9 @@ export class LegalController {
     summary: '판례 업데이트',
     description: '입력한 정보로 판례를 업데이트합니다.',
   })
-  @ApiSuccessSimpleRes()
+  @ApiSuccessSimpleRes('vectorId', 'string')
   async upsertLegal(@Body() reqDto: LegalUpsertReqDto) {
-    await this.legalService.upsertLegal(reqDto);
-    return new SuccessResDto<void>({});
+    const vectorId = await this.legalService.upsertLegal(reqDto);
+    return new SuccessResDto<string>({ result: vectorId });
   }
 }

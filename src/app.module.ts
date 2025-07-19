@@ -7,6 +7,7 @@ import 'winston-daily-rotate-file';
 import { LegalModule } from './modules/legal/legal.module';
 import { PineconeModule } from './modules/pinecone/pinecone.module';
 import { ServerModule } from './modules/server/server.module';
+import { OpenaiModule } from './modules/openai/openai.module';
 
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
@@ -20,8 +21,8 @@ const logFormat = winston.format.combine(
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
-        path.resolve(__dirname, './config/.env.default'),
-        path.resolve(__dirname, './config/.env.' + process.env.NODE_ENV),
+        path.join(process.cwd(), 'dist/config/.env.default'),
+        path.join(process.cwd(), 'dist/config/.env.' + process.env.NODE_ENV),
       ],
     }),
     // 로그 설정 모듈
@@ -43,6 +44,7 @@ const logFormat = winston.format.combine(
     PineconeModule,
     LegalModule,
     ServerModule,
+    OpenaiModule,
   ],
 })
 export class AppModule {}

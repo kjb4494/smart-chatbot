@@ -31,7 +31,7 @@
 
 ### 필수 환경변수
 
-1. **PINECONE_KEY**: Pinecone API 키
+1. **PINECONE_API_KEY**: Pinecone API 키
    - [Pinecone Console](https://app.pinecone.io/)에서 생성
    - 무료 계정으로도 사용 가능
 
@@ -48,7 +48,7 @@
 1. **프로젝트 루트에 `.env` 파일 생성**:
 
    ```env
-   PINECONE_KEY=your_actual_pinecone_api_key
+   PINECONE_API_KEY=your_actual_pinecone_api_key
    OPENAI_API_KEY=your_actual_openai_api_key
    PINECONE_INDEX_NAME=smart-chatbot
    ```
@@ -56,8 +56,8 @@
 2. **또는 `src/config/.env.local` 파일 생성** (현재 코드에서 이 파일을 찾고 있음)
 
 3. **또는 시스템 환경변수로 설정**:
-   - Windows: `set PINECONE_KEY=your_actual_pinecone_api_key`
-   - Linux/Mac: `export PINECONE_KEY=your_actual_pinecone_api_key`
+   - Windows: `set PINECONE_API_KEY=your_actual_pinecone_api_key`
+   - Linux/Mac: `export PINECONE_API_KEY=your_actual_pinecone_api_key`
 
 ## Project setup
 
