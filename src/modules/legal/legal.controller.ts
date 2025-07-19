@@ -3,6 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessSimpleRes } from 'src/common/decorators/docs/success.simple.res.decorator';
 import { SuccessResDto } from 'src/common/dto/success.res.dto';
 import {
+  LegalQuestionReqDto,
   LegalTextUpsertReqDto,
   LegalUpsertReqDto,
 } from './dto/req/legal.upsert.req.dto';
@@ -38,6 +39,28 @@ export class LegalController {
         vectorId: result.vectorId,
         message: '텍스트가 성공적으로 분석되어 저장되었습니다.',
         parsedData: result.parsedData,
+      },
+    });
+  }
+
+  @Post('/question')
+  @ApiOperation({
+    summary: '법률 질문 답변',
+    description:
+      '법률 질문을 입력하면 관련 판례들을 검색하여 AI가 답변을 생성합니다.',
+  })
+  @ApiSuccessSimpleRes('result', 'object')
+  async answerLegalQuestion(@Body() reqDto: LegalQuestionReqDto) {
+    const result = await this.legalService.answerLegalQuestion(reqDto);
+    return new SuccessResDto({
+      result: {
+        answer: result.answer,
+        searchInfo: {
+          query: result.searchQuery,
+          filters: result.filters,
+          totalResults: result.totalResults,
+        },
+        relatedCases: result.searchResults,
       },
     });
   }

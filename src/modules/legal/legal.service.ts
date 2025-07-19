@@ -5,6 +5,7 @@ import { Logger } from 'winston';
 import { OpenaiService } from '../openai/openai.service';
 import { PineconeService } from '../pinecone/pinecone.service';
 import {
+  LegalQuestionReqDto,
   LegalTextUpsertReqDto,
   LegalUpsertReqDto,
 } from './dto/req/legal.upsert.req.dto';
@@ -114,6 +115,139 @@ export class LegalService {
     } catch (error) {
       this.logger.error('Error in auto-parse and upsert process:', error);
       throw new RestServerException('Error parsing and storing legal text');
+    }
+  }
+
+  /**
+   * 질문을 받아서 분석하고 관련 판례를 검색하여 답변 생성
+   */
+  async answerLegalQuestion(questionDto: LegalQuestionReqDto): Promise<{
+    answer: string;
+    searchResults: Array<{
+      caseId: string;
+      caseName: string;
+      courtName: string;
+      caseType: string;
+      decisionDate: string;
+      score: number;
+      subjectMatter?: string;
+    }>;
+    searchQuery: string;
+    filters: Record<string, any>;
+    totalResults: number;
+  }> {
+    this.logger.info(
+      `Processing legal question: ${questionDto.question.substring(0, 100)}...`,
+    );
+
+    try {
+      // 1. OpenAI로 질문 분석 및 검색 최적화
+      this.logger.debug('Analyzing question with OpenAI...');
+      const analysis = await this.openaiService.analyzeQuestion(
+        questionDto.question,
+      );
+
+      this.logger.info(
+        `Question analysis completed - Intent: ${analysis.intent}, Legal Area: ${analysis.legalArea}`,
+      );
+
+      // 2. 질문을 벡터로 변환
+      const questionEmbedding = await this.openaiService.getTextEmbedding(
+        analysis.searchQuery,
+      );
+
+      // 3. Pinecone에서 벡터 검색 (필터 적용)
+      const index = this.pineconeService.getDefaultIndex();
+      const topK = questionDto.topK || 5;
+      const minScore = questionDto.minScore || 0.7;
+
+      // 필터 구성
+      const pineconeFilter: Record<string, any> = {
+        dataType: { $eq: 'legal_case' },
+      };
+
+      // OpenAI 분석 결과를 바탕으로 필터 추가
+      if (analysis.filters.courtName) {
+        pineconeFilter.courtName = { $eq: analysis.filters.courtName };
+      }
+      if (analysis.filters.caseType) {
+        pineconeFilter.caseType = { $eq: analysis.filters.caseType };
+      }
+      if (analysis.filters.dateRange?.from || analysis.filters.dateRange?.to) {
+        const dateFilter: Record<string, any> = {};
+        if (analysis.filters.dateRange.from) {
+          dateFilter.$gte = analysis.filters.dateRange.from;
+        }
+        if (analysis.filters.dateRange.to) {
+          dateFilter.$lte = analysis.filters.dateRange.to;
+        }
+        pineconeFilter.decisionDate = dateFilter;
+      }
+
+      this.logger.debug(`Searching with filters:`, pineconeFilter);
+
+      // Pinecone 검색 실행
+      const searchResponse = await index.query({
+        vector: questionEmbedding,
+        topK: topK * 2, // 필터링 후 부족할 수 있으니 더 많이 검색
+        filter: pineconeFilter,
+        includeMetadata: true,
+        includeValues: false,
+      });
+
+      // 4. 결과 필터링 및 정리
+      const filteredResults =
+        searchResponse.matches
+          ?.filter((match) => (match.score || 0) >= minScore)
+          .slice(0, topK) || [];
+
+      this.logger.info(`Found ${filteredResults.length} relevant legal cases`);
+
+      if (filteredResults.length === 0) {
+        return {
+          answer:
+            '질문과 관련된 판례를 찾을 수 없습니다. 다른 키워드로 검색해보시거나 더 구체적인 질문을 해주세요.',
+          searchResults: [],
+          searchQuery: analysis.searchQuery,
+          filters: analysis.filters,
+          totalResults: 0,
+        };
+      }
+
+      // 5. 검색 결과를 정리된 형태로 변환
+      const searchResults = filteredResults.map((match) => ({
+        caseId: match.metadata?.caseId as string,
+        caseName: match.metadata?.caseName as string,
+        courtName: match.metadata?.courtName as string,
+        caseType: match.metadata?.caseType as string,
+        decisionDate: match.metadata?.decisionDate as string,
+        score: match.score || 0,
+        subjectMatter: match.metadata?.subjectMatter as string,
+      }));
+
+      // 6. OpenAI로 답변 생성
+      const answerInput = filteredResults.map((match) => ({
+        metadata: match.metadata || {},
+        score: match.score || 0,
+      }));
+
+      const answer = await this.openaiService.generateAnswer(
+        questionDto.question,
+        answerInput,
+      );
+
+      this.logger.info('Legal question answered successfully');
+
+      return {
+        answer,
+        searchResults,
+        searchQuery: analysis.searchQuery,
+        filters: analysis.filters,
+        totalResults: filteredResults.length,
+      };
+    } catch (error) {
+      this.logger.error('Error answering legal question:', error);
+      throw new RestServerException('Error processing legal question');
     }
   }
 

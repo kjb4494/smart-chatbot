@@ -163,3 +163,33 @@ export class LegalTextUpsertReqDto {
   @IsObject()
   additionalMetadata?: Record<string, any>;
 }
+
+// 새로운 DTO: 질문을 받는 용도
+export class LegalQuestionReqDto {
+  @ApiProperty({
+    description: '법률 질문',
+    example: '농지개혁법과 관련된 판례에서 분배농지 상한선 초과 시 처리방법은?',
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+  question: string;
+
+  @ApiPropertyOptional({
+    description: '검색 결과 개수 (기본값: 5)',
+    example: 5,
+    minimum: 1,
+    maximum: 20,
+  })
+  @IsOptional()
+  topK?: number;
+
+  @ApiPropertyOptional({
+    description: '최소 유사도 점수 (0~1, 기본값: 0.7)',
+    example: 0.7,
+    minimum: 0,
+    maximum: 1,
+  })
+  @IsOptional()
+  minScore?: number;
+}
