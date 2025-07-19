@@ -4,7 +4,10 @@ import { RestServerException } from 'src/common/exceptions/rest.server.exception
 import { Logger } from 'winston';
 import { OpenaiService } from '../openai/openai.service';
 import { PineconeService } from '../pinecone/pinecone.service';
-import { LegalUpsertReqDto } from './dto/req/legal.upsert.req.dto';
+import {
+  LegalTextUpsertReqDto,
+  LegalUpsertReqDto,
+} from './dto/req/legal.upsert.req.dto';
 
 @Injectable()
 export class LegalService {
@@ -48,6 +51,69 @@ export class LegalService {
     } catch (error) {
       this.logger.error(`Error upserting legal case ${legal.caseId}:`, error);
       throw new RestServerException('Error upserting legal case');
+    }
+  }
+
+  /**
+   * 텍스트를 받아서 OpenAI가 자동으로 파싱한 후 저장
+   */
+  async upsertLegalFromText(legalTextDto: LegalTextUpsertReqDto): Promise<{
+    vectorId: string;
+    parsedData: any;
+  }> {
+    this.logger.info('Starting auto-parse and upsert process');
+
+    try {
+      // 1. OpenAI로 텍스트 파싱
+      this.logger.debug('Parsing legal text with OpenAI...');
+      const parsedData = await this.openaiService.parseLegalText(
+        legalTextDto.legalText,
+      );
+
+      // 2. 파싱된 데이터를 LegalUpsertReqDto 형태로 변환
+      const legalDto: LegalUpsertReqDto = {
+        caseId: parsedData.caseId,
+        caseName: parsedData.caseName,
+        caseNumber: parsedData.caseNumber as any, // OpenAI에서 문자열로 받아와서 number로 변환
+        courtName: parsedData.courtName,
+        caseType: parsedData.caseType,
+        decisionDate: parsedData.decisionDate,
+        subjectMatter: parsedData.subjectMatter,
+        legalPrinciple: parsedData.legalPrinciple,
+        referencedLaws: parsedData.referencedLaws,
+        referencedCases: parsedData.referencedCases,
+        content: parsedData.content,
+        metadata: {
+          // 기본 메타데이터 - 유연한 Record 타입 활용
+          source: 'auto_parsed',
+          parsedAt: new Date().toISOString(),
+          originalTextLength: legalTextDto.legalText.length,
+          // 추가 메타데이터 병합
+          ...legalTextDto.additionalMetadata,
+        } as any, // 유연한 메타데이터 처리를 위해 any 사용
+      };
+
+      // 3. 기존 upsertLegal 메서드 사용하여 저장
+      const vectorId = await this.upsertLegal(legalDto);
+
+      this.logger.info(
+        `Auto-parsed legal case saved successfully: ${parsedData.caseId} -> ${vectorId}`,
+      );
+
+      return {
+        vectorId,
+        parsedData: {
+          caseId: parsedData.caseId,
+          caseName: parsedData.caseName,
+          caseNumber: parsedData.caseNumber,
+          courtName: parsedData.courtName,
+          caseType: parsedData.caseType,
+          decisionDate: parsedData.decisionDate,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Error in auto-parse and upsert process:', error);
+      throw new RestServerException('Error parsing and storing legal text');
     }
   }
 
